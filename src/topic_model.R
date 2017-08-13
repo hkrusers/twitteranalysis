@@ -5,19 +5,20 @@ library(tidyverse)
 library(tidytext)
 library(qdap)
 library(tidyr)
-
-#  ====== Loading Data ====== 
+library(wordcloud)
+View(input_text)
+#  ====== Loading inputData ====== 
 # Connecting to the database 
-conn <- dbConnect(SQLite(), dbname="tweetdb.sqlite")
+conn <- dbConnect(SQLite(), dbname="data/tweetdb.sqlite")
 
 # list all tables
 alltables = dbListTables(conn) # "tweets"
 
 # query all tweets and convert to data.tables
-input_text <- data.table(dbGetQuery(conn = db, "select * from tweets"))
+input_text <- data.table(dbGetQuery(conn, "select * from tweets"))
 
-# Load data 
-input_text <- data.table(read.csv("tweets.csv"))
+# # Load data 
+# input_text <- data.table(read.csv("data/tweets.csv"))
 
 #  ====== Cleaning Data  ====== 
 
@@ -69,11 +70,12 @@ TextClean <- function(text_input){
 # Data Cleaning
 TD_matrix <- TextClean(input_text)
 
+
+# ====== Using LDA to find 5 models  ======
 # remove those with 0 row sums
 TD_matrix <- TD_matrix[rowSums(TD_matrix) != 0, ]
 
-# ====== Using LDA to find 5 models  ======
-
+# apply LDA model, tune groups by k
 ap_lda <- LDA(TD_matrix, k = 5, control = list(seed = 1234))
 
 #  ====== Explore by words  ======
@@ -87,7 +89,7 @@ ap_top_terms <- ap_topics %>%
   arrange(topic, desc(beta))
 
 # Plotting the top keywords
-png("top_keywords.png", width = 1000, height = 1000)
+png("plots/top_keywords.png", width = 1000, height = 1000)
 ap_top_terms %>%
   #  mutate(term = reorder(term, beta)) %>%
   ggplot(aes(reorder(term, beta), beta, fill = factor(topic))) +
@@ -108,7 +110,7 @@ beta_spread <- data.table(beta_spread)
 beta_spread <- beta_spread[order(-log_ratio), ]
 
 # Plot log ratio for topics 2 and 3 
-png(filename = "log_ratio.png", width = 1000, height = 1000)
+png(filename = "plots/log_ratio.png", width = 1000, height = 1000)
 ggplot(data = beta_spread, aes(x = reorder(term, -log_ratio), y = log_ratio)) +
   geom_col(show.legend = FALSE) +
   coord_flip()
@@ -134,8 +136,15 @@ for(i in c(1:length(unique(ap_documents$topic))))
 
 
 # Generate Word Cloud for each group in a loop
-png()
+
+# defining the location of the plot and plot name 
+str.plot <- sprintf("plots/group%s.png", c(1:length(str.topics)))
+
 for(i in 1:length(str.topics)){
+  
+  # write plot name
+  png(str.plot[i])
+  
   TD_topics <- TextClean(input_text[str.topics[[i]],])
   TD_topics <- t(TD_topics )
   
@@ -149,5 +158,8 @@ for(i in 1:length(str.topics)){
   wordcloud(words = d$word, freq = d$freq,
             max.words=40, random.order=FALSE, rot.per=0.35, 
             colors=brewer.pal(8, "Dark2")) %>% print()
+  
+  dev.off()
 }
-dev.off()
+
+
