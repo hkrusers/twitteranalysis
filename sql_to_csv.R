@@ -7,5 +7,5 @@ con %>%
   collect() -> results
 
 
-results %>% write_excel_csv("tweets.csv")
+results %>% write_csv("tweets.csv")
 
