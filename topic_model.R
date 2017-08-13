@@ -29,19 +29,25 @@ TD_matrix <- input_text	%>%
   # tm::removeSparseTerms(sparse = 0.9995) %>%
   as.matrix()
 
-str(TD_matrix)
+# LDA function only takes rows as Docs and columns as Terms, transpose 
+TD_matrix <- t(TD_matrix)
 
-
-str(input_text)
-
-
-ap_lda <- LDA(TD_matrix, k = 2, control = list(seed = 1234))
-
-AssociatedPress
+ap_lda <- LDA(TD_matrix, k = 4, control = list(seed = 1234))
 
 # Exploring 
 ap_topics <- tidy(ap_lda, matrix = "beta")
 ap_topics
 
-View(ap_topics)
+ap_top_terms <- ap_topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+ap_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
 
