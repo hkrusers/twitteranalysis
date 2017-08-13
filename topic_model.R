@@ -5,7 +5,6 @@ library(tidyverse)
 library(tidytext)
 library(qdap)
 
-
 # Connecting to the database 
 conn <- dbConnect(SQLite(), dbname="tweetdb.sqlite")
 
@@ -70,16 +69,37 @@ ap_lda <- LDA(TD_matrix, k = 3, control = list(seed = 1234))
 ap_topics <- tidy(ap_lda, matrix = "beta")
 ap_topics
 
+# Grabbing top 10 words for each topic  
 ap_top_terms <- ap_topics %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
   ungroup() %>%
-  arrange(topic, -beta)
+  arrange(topic, desc(beta))
 
 ap_top_terms %>%
-  mutate(term = reorder(term, beta)) %>%
+#  mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
   coord_flip()
+
+
+library(tidyr)
+
+beta_spread <- ap_topics %>%
+  filter(topic %in% c(2,3)) %>%
+  mutate(topic = paste0("topic", topic)) %>%
+  spread(topic, beta) %>%
+  filter(topic2 > .004 | topic3 > .004) %>%
+  mutate(log_ratio = log2(topic2 / topic3))
+
+beta_spread <- data.table(beta_spread)
+beta_spread <- beta_spread[order(-log_ratio), ]
+
+?reorder
+ggplot(data = beta_spread, aes(x = reorder(term, -log_ratio), y = log_ratio)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip()
+
+
 
