@@ -7,8 +7,9 @@ import json
 import pandas as pd
 import yaml
 import sqlalchemy
+import os.path
 
-with open("config.yml", 'r') as ymlfile:
+with open(os.path.split(os.path.dirname(__file__))[0] + '/parameters/config.yml', 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
 print(cfg)
@@ -20,7 +21,9 @@ asecret = cfg['asecret']
 
 results = []
 
-engine = sqlalchemy.create_engine('sqlite:///tweetdb.sqlite')
+pathdb = 'sqlite:///' + os.path.split(os.path.dirname(__file__))[0] + '/data/tweetdb.sqlite'
+
+engine = sqlalchemy.create_engine(pathdb)
 
 class listener(StreamListener):
     def on_data(self, data):
