@@ -49,7 +49,7 @@ We have scraped from Python using the tweeper library any tweets that contains "
   tweet <- comma_spacer(tweet)
   tweet <- unname(tweet)
   
-  remove.words <- c("amp", "The", "will", 'You','just', 
+  remove.words <- c("amp", "The", "will", 'You','just', 'meekmouseracist', 
                     'north', 'korea', '...', 'like')
   
   # Word cloud---------------------------------------------------
