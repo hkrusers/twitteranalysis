@@ -1,0 +1,4 @@
+tweepy
+pandas
+yaml
+sqlalchemy
