@@ -4,7 +4,9 @@ library(topicmodels)
 library(tidyverse)
 library(tidytext)
 library(qdap)
+library(tidyr)
 
+#  ====== Loading Data ====== 
 # Connecting to the database 
 conn <- dbConnect(SQLite(), dbname="tweetdb.sqlite")
 
@@ -14,10 +16,12 @@ alltables = dbListTables(conn) # "tweets"
 # query all tweets and convert to data.tables
 input_text <- data.table(dbGetQuery(conn = db, "select * from tweets"))
 
-# Try topic models
-
+# Load data 
 input_text <- data.table(read.csv("tweets.csv"))
 
+#  ====== Cleaning Data  ====== 
+
+# Function to clean data 
 TextClean <- function(text_input){
   # Text cleaning ---------------------------------------------
   tweet <- sapply(text_input$tweet,as.character)
@@ -62,18 +66,18 @@ TextClean <- function(text_input){
   
 }
 
-
 # Data Cleaning
 TD_matrix <- TextClean(input_text)
 
 # remove those with 0 row sums
 TD_matrix <- TD_matrix[rowSums(TD_matrix) != 0, ]
 
+# ====== Using LDA to find 5 models  ======
+
 ap_lda <- LDA(TD_matrix, k = 5, control = list(seed = 1234))
 
-# Exploring 
+#  ====== Explore by words  ======
 ap_topics <- tidy(ap_lda, matrix = "beta")
-ap_topics
 
 # Grabbing top 10 words for each topic  
 ap_top_terms <- ap_topics %>%
@@ -82,18 +86,17 @@ ap_top_terms <- ap_topics %>%
   ungroup() %>%
   arrange(topic, desc(beta))
 
+# Plotting the top keywords
 png("top_keywords.png", width = 1000, height = 1000)
-
 ap_top_terms %>%
-#  mutate(term = reorder(term, beta)) %>%
+  #  mutate(term = reorder(term, beta)) %>%
   ggplot(aes(reorder(term, beta), beta, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
   coord_flip()
 dev.off()
 
-library(tidyr)
-
+# Compre topics 2 and 3 using log ratio analysis 
 beta_spread <- ap_topics %>%
   filter(topic %in% c(2,3)) %>%
   mutate(topic = paste0("topic", topic)) %>%
@@ -104,18 +107,18 @@ beta_spread <- ap_topics %>%
 beta_spread <- data.table(beta_spread)
 beta_spread <- beta_spread[order(-log_ratio), ]
 
+# Plot log ratio for topics 2 and 3 
 png(filename = "log_ratio.png", width = 1000, height = 1000)
 ggplot(data = beta_spread, aes(x = reorder(term, -log_ratio), y = log_ratio)) +
   geom_col(show.legend = FALSE) +
   coord_flip()
 dev.off()
 
-
 # Document topic analysis 
 ap_documents <- tidy(ap_lda, matrix = "gamma")
 
+# Top 1000 topics from each group
 str.topics <- list(NULL)
-
 for(i in c(1:length(unique(ap_documents$topic))))
 {
   str.temp <- ap_documents %>% 
@@ -130,7 +133,7 @@ for(i in c(1:length(unique(ap_documents$topic))))
 }
 
 
-# Word cloud---------------------------------------------------
+# Generate Word Cloud for each group in a loop
 png()
 for(i in 1:length(str.topics)){
   TD_topics <- TextClean(input_text[str.topics[[i]],])
@@ -142,40 +145,9 @@ for(i in 1:length(str.topics)){
   layout(matrix(c(1, 2), nrow=2), heights=c(1, 9))
   par(mar=rep(0, 4))
   plot.new()
-#  text(x=0.5, y=0.5, paste0(date1, ', ', user))
+  #  text(x=0.5, y=0.5, paste0(date1, ', ', user))
   wordcloud(words = d$word, freq = d$freq,
             max.words=40, random.order=FALSE, rot.per=0.35, 
             colors=brewer.pal(8, "Dark2")) %>% print()
 }
-
-
 dev.off()
-
-
-input_text[str.topics[[3]], tweet]
-
-
-
-ap_documents <- data.table(ap_documents)
-
-
-ap_documents[, .(mean(gamma), 
-                 sd(gamma), 
-                 max(gamma)), by =topic]
-
-ap_documents[document == 2, ]
-View(ap_documents)
-ap_documents[topic == 1, ][order(-gamma)][c(1:10), ]
-
-
-
-
-ap_documents[topic ==1, ][order()]
-
-
-
-
-
-tidy(input_text) %>%
-  filter(document == 6) %>%
-  arrange(desc(count))

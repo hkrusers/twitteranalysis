@@ -11,6 +11,7 @@ tweet <- sapply(tweet, function(x) gsub("\\!", "\\.", x))
 tweet <- sapply(tweet, function(x) gsub("\\?", "\\.", x))
 tweet <- sapply(tweet, function(row) iconv(row, "latin1", "ASCII", sub=""))
 tweet <- clean(tweet)
+tweet <- tolower(tweet)
 tweet <- replace_number(tweet, remove = TRUE)
 tweet <- scrubber(tweet)
 tweet <- incomplete_replace(tweet)
@@ -22,12 +23,12 @@ tweet <- unname(tweet)
 
 # Word cloud---------------------------------------------------
 TD_matrix <- tweet	%>%
-	select(tweet) %>%
+#	select(tweet) %>%
 	as.matrix() %>%
 	tm::VectorSource() %>%
 	tm::Corpus() %>%
 	tm::tm_map(tm::removeWords, tm::stopwords("english")) %>%
-	tm::tm_map(tm::removeWords, c("amp", "The", "will", 'You','just')) %>%
+	tm::tm_map(tm::removeWords, c("amp", "The", "will", 'You','just', 'north', 'korea')) %>%
 	tm::TermDocumentMatrix() %>%
 	# tm::removeSparseTerms(sparse = 0.9995) %>%
 	as.matrix()
@@ -42,3 +43,4 @@ text(x=0.5, y=0.5, paste0(date1, ', ', user))
 wordcloud(words = d$word, freq = d$freq,
           max.words=40, random.order=FALSE, rot.per=0.35, 
           colors=brewer.pal(8, "Dark2"))
+

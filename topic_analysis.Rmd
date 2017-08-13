@@ -13,6 +13,7 @@ library(topicmodels)
 library(tidyverse)
 library(tidytext)
 library(qdap)
+library(tidyr)
 
 # Load Data
 input_text <- data.table(read.csv("tweets.csv"))
