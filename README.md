@@ -19,7 +19,7 @@ See requirements.txt
 
 Run download.py
 
-    python download.py
+    python src/download.py
 
 ### Wait while streaming API download
 
@@ -37,9 +37,9 @@ The following packages would be required
 
 ## To Run the R Scripts
 
-1. sql to csv.R - convert sqlite database into csv file called tweets.csv
-2. word_cloud.R - shows word cloud of the tweets
-3. topic_model.R - perform latent dirichlet allocation on the topic model
+1. src/sql_to_csv.R - convert sqlite database into csv file called tweets.csv
+2. src/word_cloud.R - shows word cloud of the tweets
+3. src/topic_model.R - perform latent dirichlet allocation on the topic model
 
 
 
