@@ -1,6 +1,8 @@
 library(wordcloud)
 library(tidyverse)
 
+input_text <- read_csv("tweets.csv")
+
 TD_matrix <- input_text	%>%
 	select(tweet) %>%
 	as.matrix() %>%
