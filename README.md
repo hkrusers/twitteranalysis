@@ -1,8 +1,8 @@
 # Twitter Analysis Demo
 
-The project aims to 
+The project aims to demonstrate how to use real time social media data to have a quick glimpse of what people are talking about a specific topic right now. 
 1. Download streaming data from Twitter.
-2. Perform Latent Dirichlet Allocation on the data.
+2. Perform Latent Dirichlet Allocation (LDA) on the data, to quickly summarise different sub-topics.
 
 This is put together during the Data Science HK unhackathon on 20170813.
 
