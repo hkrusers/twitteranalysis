@@ -1,11 +1,11 @@
 library(dplyr)
 library(readr)
-con <- src_sqlite("tweetdb.sqlite")
+library(RSQLite)
+
+con <- src_sqlite("data/tweetdb.sqlite")
 
 con %>%
   tbl('tweets') %>%
   collect() -> results
 
-
-results %>% write_csv("tweets.csv")
-
+results %>% write_csv("data/tweets.csv")
