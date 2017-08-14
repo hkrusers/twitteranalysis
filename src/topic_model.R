@@ -25,24 +25,24 @@ input_text <- data.table(dbGetQuery(conn, "select * from tweets"))
 # Function to clean data 
 TextClean <- function(text_input){
   # Text cleaning ---------------------------------------------
-  tweet <- sapply(text_input$tweet,as.character)
-  tweet <- sapply(tweet, function(x) gsub("@\\s.+\\shttp","http",x))  #Remove @place
-  tweet <- sapply(tweet, function(x) gsub("htt.*","",x))
-  tweet <- sapply(tweet, function(x) gsub("@\\w+", " ", x))  #Remove @User
-  tweet <- sapply(tweet, function(x) gsub("#", " ", x))
-  tweet <- sapply(tweet, function(x) gsub("\\!", "\\.", x))
-  tweet <- sapply(tweet, function(x) gsub("\\?", "\\.", x))
-  tweet <- sapply(tweet, function(row) iconv(row, "latin1", "ASCII", sub=""))
-  tweet <- clean(tweet)
-  tweet <- tolower(tweet)
-  tweet <- replace_number(tweet, remove = TRUE)
-  tweet <- scrubber(tweet)
-  tweet <- incomplete_replace(tweet)
-  tweet <- Trim(tweet)
-  tweet <- bracketX(tweet,bracket = "all")
-  tweet <- add_incomplete(tweet,silent = TRUE)
-  tweet <- comma_spacer(tweet)
-  tweet <- unname(tweet)
+  tweet <- text_input$tweet %>%
+    gsub("@\\s.+\\shttp","http", .) %>% #Remove @place
+    gsub("htt.*","", .) %>%
+    gsub("@\\w+", " ", .) %>% #Remove @User
+    gsub("#", " ", .) %>%
+    gsub("\\!", "\\.", .) %>%
+    gsub("\\?", "\\.", .) %>%
+    iconv(., "latin1", "ASCII", sub="") %>%
+    clean() %>%
+    tolower() %>%
+    replace_number(remove = TRUE) %>%
+    scrubber() %>%
+    incomplete_replace() %>%
+    Trim() %>%
+    bracketX(bracket = "all") %>%
+    add_incomplete(silent = TRUE) %>%
+    comma_spacer() %>%
+    unname()
   
   remove.words <- c("amp", "The", "will", 'You','just', 'meekmouseracist', 
                     'north', 'korea', '...', 'like')

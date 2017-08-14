@@ -1,36 +1,38 @@
 library(wordcloud)
 library(tidyverse)
+library(qdap)
+
+input_text <- results
 
 # Text cleaning ---------------------------------------------
-tweet <- sapply(input_text$tweet,as.character)
-tweet <- sapply(tweet, function(x) gsub("@\\s.+\\shttp","http",x))  #Remove @place
-tweet <- sapply(tweet, function(x) gsub("htt.*","",x))
-tweet <- sapply(tweet, function(x) gsub("@\\w+", " ", x))  #Remove @User
-tweet <- sapply(tweet, function(x) gsub("#", " ", x))
-tweet <- sapply(tweet, function(x) gsub("\\!", "\\.", x))
-tweet <- sapply(tweet, function(x) gsub("\\?", "\\.", x))
-tweet <- sapply(tweet, function(row) iconv(row, "latin1", "ASCII", sub=""))
-tweet <- clean(tweet)
-tweet <- tolower(tweet)
-tweet <- replace_number(tweet, remove = TRUE)
-tweet <- scrubber(tweet)
-tweet <- incomplete_replace(tweet)
-tweet <- Trim(tweet)
-tweet <- bracketX(tweet,bracket = "all")
-tweet <- add_incomplete(tweet,silent = TRUE)
-tweet <- comma_spacer(tweet)
-tweet <- unname(tweet)
+tweet <- input_text$tweet %>%
+            gsub("@\\s.+\\shttp","http", .) %>% #Remove @place
+            gsub("htt.*","", .) %>%
+            gsub("@\\w+", " ", .) %>% #Remove @User
+            gsub("#", " ", .) %>%
+            gsub("\\!", "\\.", .) %>%
+            gsub("\\?", "\\.", .) %>%
+            iconv(., "latin1", "ASCII", sub="") %>%
+            clean() %>%
+            tolower() %>%
+            replace_number(remove = TRUE) %>%
+            scrubber() %>%
+            incomplete_replace() %>%
+            Trim() %>%
+            bracketX(bracket = "all") %>%
+            add_incomplete(silent = TRUE) %>%
+            comma_spacer() %>%
+            unname()
 
 # Word cloud---------------------------------------------------
 TD_matrix <- tweet	%>%
-#	select(tweet) %>%
 	as.matrix() %>%
 	tm::VectorSource() %>%
 	tm::Corpus() %>%
 	tm::tm_map(tm::removeWords, tm::stopwords("english")) %>%
 	tm::tm_map(tm::removeWords, c("amp", "The", "will", 'You','just', 'north', 'korea')) %>%
 	tm::TermDocumentMatrix() %>%
-	# tm::removeSparseTerms(sparse = 0.9995) %>%
+	# tm::removeSparseTerms(sparse = 0.9995) %>% # if you have a large matrix
 	as.matrix()
 	
 v <- sort(rowSums(TD_matrix),decreasing=TRUE)
