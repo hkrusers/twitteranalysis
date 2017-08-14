@@ -2,7 +2,7 @@
 
 The project aims to 
 1. Download streaming data from Twitter.
-2. Perform Latent Dirichlet Analysis on the data.
+2. Perform Latent Dirichlet Allocation on the data.
 
 This is put together during the Data Science HK unhackathon on 20170813.
 
